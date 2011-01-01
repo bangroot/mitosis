@@ -1,19 +1,27 @@
 package mitosis;
 
 import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
 
-public class GenePool {
-  private String _id;
+public class GenePool extends BaseEntity {
+  private int size = 15;
 
-  public String get_id() {
-    return _id;
+  public int getSize() {
+    return size;
   }
 
-  public void save(DB database) {
+  public void setSize(int size) {
+    this.size = size;
+  }
+
+
+  static {
+    registerCollectionName(GenePool.class, "genepool");
+  }
+
+  @Override
+  protected BasicDBObject toDbObject() {
     BasicDBObject object = new BasicDBObject();
-    object.put("size", 15);
-    database.getCollection("genepool").insert(object);
-    _id = object.getString("_id");
+    object.put("size", size);
+    return object;
   }
 }

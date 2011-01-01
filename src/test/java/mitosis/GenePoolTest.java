@@ -1,7 +1,6 @@
 package mitosis;
 
 import com.mongodb.DB;
-import com.mongodb.DBObject;
 import org.junit.Test;
 
 import static junit.framework.Assert.*;
@@ -13,10 +12,21 @@ public class GenePoolTest extends BaseTest {
     GenePool pool = new GenePool();
     DB db = injector.getInstance(DB.class);
     pool.save(db);
-    assertEquals(1, db.getCollection("genepool").count());
-    for (DBObject dbo : db.getCollection("genepool").find()) {
-      System.out.println(dbo);
-    }
-    System.out.println(pool.get_id());
+    assertEquals(1, db.getCollection(BaseEntity.getCollectionFor(GenePool.class)).count());
   }
+
+  @Test
+  public void testModificationOfGenePool() {
+    GenePool pool = new GenePool();
+    DB db = injector.getInstance(DB.class);
+    pool.save(db);
+    assertEquals(1, db.getCollection(BaseEntity.getCollectionFor(GenePool.class)).count());
+    int newSize = pool.getSize() + 1;
+    pool.setSize(newSize);
+    pool.save(db);
+    assertEquals(1, db.getCollection(BaseEntity.getCollectionFor(GenePool.class)).count());
+    GenePool lookedUpPool = BaseEntity.findByKey(GenePool.class,  pool.getId(), db);
+    assertEquals(newSize, lookedUpPool.getSize());
+  }
+
 }

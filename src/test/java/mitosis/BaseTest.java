@@ -3,7 +3,7 @@ package mitosis;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.mongodb.DB;
-import org.junit.AfterClass;
+import org.junit.After;
 import org.junit.BeforeClass;
 
 import java.net.UnknownHostException;
@@ -17,8 +17,8 @@ public abstract class BaseTest {
     injector = Guice.createInjector(new MitosisIntegrationTestModule());
   }
 
-  @AfterClass
-  public static void tearDownData() {
+  @After
+  public void tearDownData() {
     injector.getInstance(DB.class).dropDatabase();
   }
 }
