@@ -27,6 +27,17 @@ public class GenePoolTest extends BaseTest {
     assertEquals(1, db.getCollection(BaseEntity.getCollectionFor(GenePool.class)).count());
     GenePool lookedUpPool = BaseEntity.findByKey(GenePool.class,  pool.getId(), db);
     assertEquals(newSize, lookedUpPool.getSize());
+    assertEquals(pool.getId(), lookedUpPool.getId());
   }
 
+  @Test
+  public void testPoolSizing() {
+    GenePool pool = new GenePool();
+    pool.registerGeneClass(TestGene.class);
+    pool.initialize();
+    assertEquals(15, pool.getCurrentChromosomes().size());
+  }
+
+  public static class TestGene extends Gene {
+  }
 }

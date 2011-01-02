@@ -2,19 +2,20 @@ package mitosis;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DB;
+import com.mongodb.DBObject;
 import org.bson.types.ObjectId;
 
 import java.util.HashMap;
 
 public abstract class BaseEntity {
-  private static HashMap<Class, String> collectionMap = new HashMap<Class, String>();
+  private static HashMap<Class<? extends BaseEntity>, String> collectionMap = new HashMap<Class<? extends BaseEntity>, String>();
   private ObjectId _id;
 
-  public static String getCollectionFor(Class clazz) {
+  public static String getCollectionFor(Class<? extends BaseEntity> clazz) {
     return collectionMap.get(clazz);
   }
 
-  protected static void registerCollectionName(Class clazz, String collection) {
+  protected static void registerCollectionName(Class<? extends BaseEntity> clazz, String collection) {
     collectionMap.put(clazz, collection);
   }
 
@@ -22,8 +23,12 @@ public abstract class BaseEntity {
     return _id;
   }
 
+  protected void setId(ObjectId id) {
+    _id = id;
+  }
+
   public void save(DB database) {
-    BasicDBObject object = toDbObject();
+    DBObject object = toDbObject();
     if (null == _id) {
       database.getCollection(getCollectionFor(getClass())).insert(object);
       _id = (ObjectId) object.get("_id");
@@ -34,9 +39,19 @@ public abstract class BaseEntity {
   }
 
   public static <T extends BaseEntity> T findByKey(Class<T> entityClass, ObjectId id, DB database) {
-    return (T) database.getCollection(getCollectionFor(entityClass)).findOne(new BasicDBObject("_id", id));
+    // this should be protected by the framework
+    //noinspection unchecked
+    DBObject oData = database.getCollection(getCollectionFor(entityClass)).findOne(new BasicDBObject("_id", id));
+    try {
+      T val = entityClass.newInstance();
+      val.fromDbObject(oData);
+      return val;
+    } catch (Throwable e) {
+      throw new RuntimeException("Error reading object from database.", e);
+    }
   }
 
-  protected abstract BasicDBObject toDbObject();
+  protected abstract DBObject toDbObject();
 
+  protected abstract void fromDbObject(DBObject data);
 }
